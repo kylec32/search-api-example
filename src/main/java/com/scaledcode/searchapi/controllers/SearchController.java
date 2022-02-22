@@ -1,28 +1,42 @@
 package com.scaledcode.searchapi.controllers;
 
-import com.scaledcode.searchapi.Client;
-import com.scaledcode.searchapi.models.ExampleObject;
-import org.springframework.web.bind.annotation.GetMapping;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.scaledcode.searchapi.ElasticClient;
+import com.scaledcode.searchapi.models.Book;
+import com.scaledcode.searchapi.searchrequest.AbstractSearchRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class SearchController {
-    @GetMapping("search")
-    public String search() throws IOException {
-        var client = Client.getClient();
-        var results = client.search(s -> s
-                        .index("test2")
-                        .query(q -> q.matchAll(v -> v))
-//                        .query(q -> q
-//                                .term(t -> t
-//                                        .field("name")
-//                                        .value(v -> v.stringValue("bicycle"))
-//                                ))
-        , ExampleObject.class);
+    private final ElasticClient elasticClient;
 
-        System.out.println(results);
-        return "hello";
+    private final String indexName;
+
+    public SearchController(ElasticClient elasticClient,
+                            @Value("${test.elasticsearch.index.name}") String indexName) {
+        this.elasticClient = elasticClient;
+        this.indexName = indexName;
     }
+
+    @PostMapping("search")
+    public List<Book> doSearch(@RequestBody AbstractSearchRequest request) throws IOException {
+        return elasticClient.getClient()
+                            .search(s -> s
+                                            .index(indexName)
+                                            .query(request.getSearch())
+                                    , Book.class)
+                            .hits()
+                            .hits()
+                            .stream()
+                            .map(Hit::source)
+                            .toList();
+
+    }
+
 }
