@@ -28,15 +28,13 @@ public class SearchController {
     public List<Book> doSearch(@RequestBody AbstractSearchRequest request) throws IOException {
         return elasticClient.getClient()
                             .search(s -> s
-                                            .index(indexName)
-                                            .query(request.getSearch())
+                                        .index(indexName)
+                                        .query(request.getSearch())
                                     , Book.class)
                             .hits()
                             .hits()
                             .stream()
                             .map(Hit::source)
                             .toList();
-
     }
-
 }

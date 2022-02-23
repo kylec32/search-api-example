@@ -12,7 +12,7 @@ public class EqualsSearchRequest extends TerminalSearchRequest{
     @Override
     public Query getSearch() {
         return new Query(QueryBuilders.regexp()
-                                      .field(getField(SearchType.KEYWORD) + ".raw")
+                                      .field(getField(SearchType.KEYWORD))
                                       .value("\"" + getValue() + "\"")
                                       .build());
     }

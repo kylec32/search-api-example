@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
-public abstract class CompositeSearchRequest extends AbstractSearchRequest {
+public abstract class CompositeSearchRequest implements AbstractSearchRequest {
     @Getter(value = AccessLevel.PROTECTED)
     private List<AbstractSearchRequest> requests;
 }

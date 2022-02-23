@@ -44,8 +44,7 @@ public class ElasticClient {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        ElasticsearchTransport transport = new RestClientTransport(
-                restClient, new JacksonJsonpMapper(mapper));
+        ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(mapper));
 
         // And create the API client
         client = new ElasticsearchClient(transport);

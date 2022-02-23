@@ -1,20 +1,20 @@
 package com.scaledcode.searchapi.searchrequest.composite;
 
-import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.scaledcode.searchapi.searchrequest.AbstractSearchRequest;
-import com.scaledcode.searchapi.values.BooleanOperator;
+import com.scaledcode.searchapi.searchrequest.terminal.NegateSearchRequest;
+import com.scaledcode.searchapi.values.CompositeOperator;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-public abstract class CompositeSearchRequestFactory {
-    public static CompositeSearchRequest getSearchRequest(List<AbstractSearchRequest> requests, BooleanOperator operator) {
-        switch (operator) {
-            case AND:
-                return new AndCompositeSearchRequest(requests);
-            case OR:
-                return new OrCompositeSearchRequest(requests);
-            default:
-                throw new RuntimeException("Not implemented");
-        }
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class CompositeSearchRequestFactory {
+    public static CompositeSearchRequest getSearchRequest(List<AbstractSearchRequest> requests, CompositeOperator operator) {
+        return switch (operator) {
+            case AND -> new AndCompositeSearchRequest(requests);
+            case OR -> new OrCompositeSearchRequest(requests);
+            case NOT -> new NegateSearchRequest(requests);
+        };
     }
 }

@@ -1,6 +1,7 @@
 package com.scaledcode.searchapi.values;
 
-public enum BooleanOperator {
+public enum CompositeOperator {
     AND,
-    OR
+    OR,
+    NOT
 }

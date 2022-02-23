@@ -1,10 +1,12 @@
 package com.scaledcode.searchapi.searchrequest.fieldmapping;
 
 import com.scaledcode.searchapi.values.SearchType;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 import java.util.Optional;
 
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class FieldMapper {
     private static final Map<FieldMapKey, String> fieldMap = Map.ofEntries(
             Map.entry(new FieldMapKey("title", SearchType.TEXT), "title"),

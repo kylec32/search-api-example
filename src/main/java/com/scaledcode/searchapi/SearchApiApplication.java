@@ -1,6 +1,9 @@
 package com.scaledcode.searchapi;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.scaledcode.searchapi.models.Book;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +20,7 @@ import java.util.Base64;
 import java.util.List;
 
 @SpringBootApplication
+@Slf4j
 public class SearchApiApplication implements CommandLineRunner {
 	private final ElasticClient elasticClient;
 
@@ -48,19 +52,23 @@ public class SearchApiApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		try {
 			elasticClient.getClient().indices().delete(d -> d.index("test2"));
-		} catch (Exception e) {
-			System.out.println("No index exists, delete not needed.");
+		} catch (ElasticsearchException e) {
+			log.info("No index exists, delete not needed.");
 		}
 
 		createIndex(url, indexName, username, password);
 
+		seedData();
+	}
+
+	private void seedData() throws IOException {
 		var book1 = Book.builder()
-								.title("The Hobbit")
-								.author("J.R.R. Tolkien")
-								.isbn("0-395-19395-8")
-								.publishDate(LocalDate.of(1937, 9,21))
-								.categories(List.of("Fantasy", "Adventure"))
-								.build();
+						.title("The Hobbit")
+						.author("J.R.R. Tolkien")
+						.isbn("0-395-19395-8")
+						.publishDate(LocalDate.of(1937, 9,21))
+						.categories(List.of("Fantasy", "Adventure"))
+						.build();
 
 		var book2 = Book.builder()
 						.title("The Hunger Games")
@@ -98,7 +106,9 @@ public class SearchApiApplication implements CommandLineRunner {
 
 		for (int i=0; i<books.size(); i++) {
 			int index = i;
-			elasticClient.getClient().index(indexer -> indexer.index(indexName).document(books.get(index)).id(Integer.toString(index)));
+			elasticClient.getClient().index(indexer -> indexer.index(indexName)
+															  .document(books.get(index))
+															  .id(Integer.toString(index)));
 		}
 	}
 
@@ -106,47 +116,50 @@ public class SearchApiApplication implements CommandLineRunner {
 							 final String indexName,
 							 final String elasticUsername,
 							 final String elasticPassword) throws IOException, InterruptedException {
-		var mapping = "{\n"
-				+ "\t\"mappings\": {\n"
-				+ "\t\t\"properties\": {\n"
-				+ "\t\t\t\"title\": {\n"
-				+ "\t\t\t\t\"type\": \"text\",\n"
-				+ "\t\t\t\t\"fields\": {\n"
-				+ "\t\t\t\t\t\"raw\": {\n"
-				+ "\t\t\t\t\t\t\"type\": \"keyword\",\n"
-				+ "\t\t\t\t\t\t\"normalizer\": \"lowercase\"\n"
-				+ "\t\t\t\t\t}\n"
-				+ "\t\t\t\t}\n"
-				+ "\t\t\t},\n"
-				+ "\t\t\t\"author\": {\n"
-				+ "\t\t\t\t\"type\": \"text\",\n"
-				+ "\t\t\t\t\"fields\": {\n"
-				+ "\t\t\t\t\t\"raw\": {\n"
-				+ "\t\t\t\t\t\t\"type\": \"keyword\",\n"
-				+ "\t\t\t\t\t\t\"normalizer\": \"lowercase\"\n"
-				+ "\t\t\t\t\t}\n"
-				+ "\t\t\t\t}\n"
-				+ "\t\t\t},\n"
-				+ "\t\t\t\"isbn\": {\n"
-				+ "\t\t\t\t\"type\": \"keyword\"\n"
-				+ "\t\t\t},\n"
-				+ "\t\t\t\"publication_date\": {\n"
-				+ "\t\t\t\t\"type\": \"date\"\n"
-				+ "\t\t\t},\n"
-				+ "\t\t\t\"keyword\": {\n"
-				+ "\t\t\t\t\"type\": \"text\",\n"
-				+ "\t\t\t\t\"fields\": {\n"
-				+ "\t\t\t\t\t\"raw\": {\n"
-				+ "\t\t\t\t\t\t\"type\": \"keyword\",\n"
-				+ "\t\t\t\t\t\t\"normalizer\": \"lowercase\"\n"
-				+ "\t\t\t\t\t}\n"
-				+ "\t\t\t\t}\n"
-				+ "\t\t\t}\n"
-				+ "\t\t}\n"
-				+ "\t}\n"
-				+ "}";
+		var mapping = """
+				{
+					"mappings": {
+						"properties": {
+							"title": {
+								"type": "text",
+								"fields": {
+									"raw": {
+										"type": "keyword",
+										"normalizer": "lowercase"
+									}
+								}
+							},
+							"author": {
+								"type": "text",
+								"fields": {
+									"raw": {
+										"type": "keyword",
+										"normalizer": "lowercase"
+									}
+								}
+							},
+							"isbn": {
+								"type": "keyword"
+							},
+							"publication_date": {
+								"type": "date"
+							},
+							"keyword": {
+								"type": "text",
+								"fields": {
+									"raw": {
+										"type": "keyword",
+										"normalizer": "lowercase"
+									}
+								}
+							}
+						}
+					}
+				}
+				""";
 
-		var authorizationHeader = Base64.getEncoder().encodeToString((elasticUsername + ":" + elasticPassword).getBytes(StandardCharsets.UTF_8));
+		var authorizationHeader = Base64.getEncoder()
+												.encodeToString((elasticUsername + ":" + elasticPassword).getBytes(StandardCharsets.UTF_8));
 
 		HttpClient client = HttpClient.newHttpClient();
 		var createRequest = HttpRequest.newBuilder()
@@ -158,7 +171,7 @@ public class SearchApiApplication implements CommandLineRunner {
 
 		var response = client.send(createRequest, HttpResponse.BodyHandlers.ofString());
 
-		if (response.statusCode() >= 400) {
+		if (response.statusCode() >= HttpStatus.SC_BAD_REQUEST) {
 			throw new RuntimeException("Issue creating index");
 		}
 	}

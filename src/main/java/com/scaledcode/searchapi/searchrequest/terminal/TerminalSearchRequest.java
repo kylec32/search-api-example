@@ -12,7 +12,7 @@ import lombok.Getter;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
-public abstract class TerminalSearchRequest extends AbstractSearchRequest {
+public abstract class TerminalSearchRequest implements AbstractSearchRequest {
     @Getter(value = AccessLevel.NONE)
     private String field;
     @Getter(value = AccessLevel.PROTECTED)
