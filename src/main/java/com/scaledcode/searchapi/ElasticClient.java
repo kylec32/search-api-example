@@ -29,7 +29,10 @@ public class ElasticClient {
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 
-        RestClient restClient = RestClient.builder(new HttpHost(url.split(":")[1], Integer.parseInt(url.split(":")[2])))
+        var host = url.split("//")[1].split(":")[0];
+        var port = Integer.parseInt(url.split(":")[2]);
+
+        RestClient restClient = RestClient.builder(new HttpHost(host, port))
                                           .setHttpClientConfigCallback(httpClientBuilder -> {
                                               httpClientBuilder.disableAuthCaching();
                                               return httpClientBuilder

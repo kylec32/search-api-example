@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import com.scaledcode.searchapi.searchrequest.AbstractSearchRequest;
 
+//todo doesn't spit out message
 public class NegateSearchRequest extends AbstractSearchRequest{
     private final AbstractSearchRequest searchRequest;
 

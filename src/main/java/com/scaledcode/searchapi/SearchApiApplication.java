@@ -133,7 +133,7 @@ public class SearchApiApplication implements CommandLineRunner {
 				+ "\t\t\t\"publication_date\": {\n"
 				+ "\t\t\t\t\"type\": \"date\"\n"
 				+ "\t\t\t},\n"
-				+ "\t\t\t\"keywords\": {\n"
+				+ "\t\t\t\"keyword\": {\n"
 				+ "\t\t\t\t\"type\": \"text\",\n"
 				+ "\t\t\t\t\"fields\": {\n"
 				+ "\t\t\t\t\t\"raw\": {\n"

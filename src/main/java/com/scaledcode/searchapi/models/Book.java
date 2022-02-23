@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,5 +19,6 @@ public class Book {
     private String isbn;
     @JsonProperty("publication_date")
     private LocalDate publishDate;
+    @JsonProperty("keyword")
     private List<String> categories;
 }
